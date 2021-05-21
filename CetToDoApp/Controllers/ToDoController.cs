@@ -20,9 +20,18 @@ namespace CetToDoApp.Controllers
         }
 
         // GET: ToDo
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(bool showall=false)
         {
-            var applicationDbContext = _context.ToDoItems.Include(t => t.Category);
+            ViewBag.Showall = showall;
+
+            var applicationDbContext = _context.ToDoItems.Include(t => t.Category).AsQueryable();
+               
+            if (!showall)
+            {
+                applicationDbContext = applicationDbContext.Where(t => !t.IsCompleted);
+            }
+
+            applicationDbContext = applicationDbContext.OrderBy(t=> t.DueDate);
             return View(await applicationDbContext.ToListAsync());
         }
 
@@ -48,7 +57,7 @@ namespace CetToDoApp.Controllers
         // GET: ToDo/Create
         public IActionResult Create()
         {
-            ViewData["CategoryId"] = new SelectList(_context.Categorites, "Id", "Id");
+            ViewData["CategoryId"] = new SelectList(_context.Categorites, "Id", "Name");
             return View();
         }
 
@@ -65,7 +74,7 @@ namespace CetToDoApp.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CategoryId"] = new SelectList(_context.Categorites, "Id", "Id", toDoItem.CategoryId);
+            ViewData["CategoryId"] = new SelectList(_context.Categorites, "Id", "Name", toDoItem.CategoryId);
             return View(toDoItem);
         }
 
@@ -118,7 +127,7 @@ namespace CetToDoApp.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CategoryId"] = new SelectList(_context.Categorites, "Id", "Id", toDoItem.CategoryId);
+            ViewData["CategoryId"] = new SelectList(_context.Categorites, "Id", "Name", toDoItem.CategoryId);
             return View(toDoItem);
         }
 
@@ -150,6 +159,34 @@ namespace CetToDoApp.Controllers
             _context.ToDoItems.Remove(toDoItem);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+
+       
+
+        private async Task<ActionResult> ChangeStatus(int id, bool status, bool showall)
+        {
+            var todoItemItem = _context.ToDoItems.FirstOrDefault(t => t.Id == id);
+            if (todoItemItem == null)
+            {
+                return NotFound();
+            }
+            todoItemItem.IsCompleted = status;
+            todoItemItem.CompletedDate = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index), new { showall= showall});
+        }
+    public async Task<ActionResult> MakeComplete (int id, bool showall)
+        {
+            return await ChangeStatus(id,true, showall);
+
+        }
+        public async Task<ActionResult> MakeInComplete(int id, bool showall)
+        {
+
+            return await ChangeStatus(id, false, showall);
         }
 
         private bool ToDoItemExists(int id)
