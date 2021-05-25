@@ -23,14 +23,15 @@ namespace CetToDoApp.Controllers
         public async Task<IActionResult> Index(SearchViewModel searchModel)
         {
        var query = _context.Categorites.AsQueryable();
-            if (!String.IsNullOrWhiteSpace(searchModel.SearchText))
+            if (!String.IsNullOrWhiteSpace(searchModel.SearchText) && !searchModel.SearchWithDesc)
             {
                 query = query.Where(t => t.Name.Contains(searchModel.SearchText));
+               
             }
-            if (searchModel.SearchWithDesc)
-            {
-                query = query.Where(t => t.Description.Contains(searchModel.SearchText));
-            }
+            else if (!String.IsNullOrWhiteSpace(searchModel.SearchText) && searchModel.SearchWithDesc)
+             {
+                    query = query.Where(t => t.Description.Contains(searchModel.SearchText));
+             }
             searchModel.Result2 = await query.ToListAsync();
             return View(searchModel);
         }
@@ -64,7 +65,7 @@ namespace CetToDoApp.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name")] Category category)
+        public async Task<IActionResult> Create([Bind("Id,Name,Description")] Category category)
         {
             if (ModelState.IsValid)
             {
@@ -96,7 +97,7 @@ namespace CetToDoApp.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Category category)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description")] Category category)
         {
             if (id != category.Id)
             {
