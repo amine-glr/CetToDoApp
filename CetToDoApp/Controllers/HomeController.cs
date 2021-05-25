@@ -1,5 +1,7 @@
-﻿using CetToDoApp.Models;
+﻿using CetToDoApp.Data;
+using CetToDoApp.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -12,15 +14,23 @@ namespace CetToDoApp.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly ApplicationDbContext dbContext;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, ApplicationDbContext dbContext)
         {
             _logger = logger;
+            this.dbContext = dbContext;
         }
 
-        public IActionResult Index()
+        public  async Task<IActionResult> Index()
         {
-            return View();
+            var query = dbContext.ToDoItems
+                .Include(t=> t.Category)
+                .Where(t => t.IsCompleted == false)
+                .OrderBy(t => t.DueDate)
+                .Take(3);
+            List<ToDoItem> result = await query.ToListAsync();
+            return View(result); 
         }
 
         public IActionResult Privacy()

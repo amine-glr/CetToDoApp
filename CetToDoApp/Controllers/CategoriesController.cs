@@ -20,9 +20,19 @@ namespace CetToDoApp.Controllers
         }
 
         // GET: Categories
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(SearchViewModel searchModel)
         {
-            return View(await _context.Categorites.ToListAsync());
+       var query = _context.Categorites.AsQueryable();
+            if (!String.IsNullOrWhiteSpace(searchModel.SearchText))
+            {
+                query = query.Where(t => t.Name.Contains(searchModel.SearchText));
+            }
+            if (searchModel.SearchWithDesc)
+            {
+                query = query.Where(t => t.Description.Contains(searchModel.SearchText));
+            }
+            searchModel.Result2 = await query.ToListAsync();
+            return View(searchModel);
         }
 
         // GET: Categories/Details/5
