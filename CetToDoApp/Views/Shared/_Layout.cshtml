@@ -27,6 +27,8 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Todo" asp-action="Index">Todo</a>
                         </li>
+
+                        @await Component.InvokeAsync("CategoryMenu", new { ShowEmpty=false })
                     </ul>
                     <form asp-controller="ToDo" asp-action="Index" method="get">
                         <input name="SearchText" id="SearchText" />

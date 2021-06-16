@@ -7,18 +7,24 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CetToDoApp.Data;
 using CetToDoApp.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CetToDoApp.Controllers
 {
+    [Authorize]
     public class ToDoController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<CetUser> _userManager;
 
-        public ToDoController(ApplicationDbContext context)
+        public ToDoController(ApplicationDbContext context, UserManager<CetUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
+        [AllowAnonymous]
         // GET: ToDo
         public async Task<IActionResult> Index(SearchViewModel searchModel)
         {
@@ -60,6 +66,7 @@ namespace CetToDoApp.Controllers
         }
 
         // GET: ToDo/Create
+        [Authorize]
         public IActionResult Create()
         {
             ViewData["CategoryId"] = new SelectList(_context.Categorites, "Id", "Name");
@@ -71,8 +78,12 @@ namespace CetToDoApp.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> Create([Bind("Id,Title,Description,IsCompleted,DueDate,CategoryId")] ToDoItem toDoItem)
         {
+            var cetUser= await _userManager.GetUserAsync(HttpContext.User);
+
+            toDoItem.CetUserId = cetUser.Id;
             if (ModelState.IsValid)
             {
                 _context.Add(toDoItem);

@@ -53,5 +53,9 @@ namespace CetToDoApp.Models
         
         public virtual Category Category { get; set;  }    
         
+
+        public string CetUserId { get; set; }
+
+        public virtual CetUser CetUser { get; set;  }
     }
 }
