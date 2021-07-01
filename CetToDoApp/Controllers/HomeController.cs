@@ -22,15 +22,21 @@ namespace CetToDoApp.Controllers
             this.dbContext = dbContext;
         }
 
-        public  async Task<IActionResult> Index()
+        public  async Task<IActionResult> Index(SearchViewModel searchModel)
         {
             var query = dbContext.ToDoItems
                 .Include(t=> t.Category)
-                .Where(t => t.IsCompleted == false)
-                .OrderBy(t => t.DueDate)
-                .Take(3);
-            List<ToDoItem> result = await query.ToListAsync();
-            return View(result); 
+                .Where(t => t.IsCompleted == false).AsQueryable();
+
+            if (!String.IsNullOrWhiteSpace(searchModel.SearchText))
+            {
+                query = query.Where(t => t.Title.Contains(searchModel.SearchText));
+            }
+
+
+            query = query.OrderBy(t => t.DueDate).Take(3);
+            searchModel.Result = await query.ToListAsync();
+            return View(searchModel);
         }
 
         public IActionResult Privacy()

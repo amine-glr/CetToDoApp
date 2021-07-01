@@ -30,9 +30,9 @@
 
                         @await Component.InvokeAsync("CategoryMenu", new { ShowEmpty=false })
                     </ul>
-                    <form asp-controller="ToDo" asp-action="Index" method="get">
+                    <form asp-controller="Home" asp-action="Index" method="get">
                         <input name="SearchText" id="SearchText" />
-                        <input name="ShowAll" id="Showall" type="hidden" value="true" />
+                       
                         
                         <input type="submit" value="Search" />
                     </form>
